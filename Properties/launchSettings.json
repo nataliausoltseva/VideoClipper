@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "VideoClipper (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "VideoClipper (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

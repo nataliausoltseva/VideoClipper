@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="VideoClipper.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VideoClipper"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Button x:Name="addVideoButton" Click="addVideoButton_Click">Add video</Button>
+            <TextBox PlaceholderText="Start timestamp (HH:MM:SS)" x:Name="startTimestampText" TextChanged="startTimestampText_TextChanged" />
+            <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged"/>
+            <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False">Clip</Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <MediaPlayerElement x:Name="mediaPlayerElement" AutoPlay="False" MaxHeight="600"/>
+        </StackPanel>
+    </Grid>
+</Window>
