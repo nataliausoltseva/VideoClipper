@@ -10,18 +10,84 @@
 
     <Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <!--The add button-->
             <Button x:Name="addVideoButton" Click="addVideoButton_Click">Add video</Button>
-            <TextBox PlaceholderText="Start timestamp (HH:MM:SS)" x:Name="startTimestampText" TextChanged="startTimestampText_TextChanged" />
-            <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged"/>
+            <!--The container for timestamps-->
+            <StackPanel Orientation="Vertical">
+                <!--The start timestamp-->
+                <StackPanel Width="200">
+                    <TextBox PlaceholderText="Start timestamp (HH:MM:SS)" x:Name="startTimestampText" TextChanged="startTimestampText_TextChanged" />
+                    <TextBlock x:Name="startTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
+                </StackPanel>
+                <!--The end timestamp-->
+                <StackPanel Width="200">
+                    <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged" />
+                    <TextBlock x:Name="endTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
+                </StackPanel>
+                <!--The duration picker-->
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="timeDurationText" />
+                    <DropDownButton x:Name="dropdownDurationLabel" Content="secs">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="secs" Click="onMenuItemClick" />
+                                <MenuFlyoutItem Text="mins" Click="onMenuItemClick" />
+                                <MenuFlyoutItem Text="hrs" Click="onMenuItemClick" />
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel>
+                <!--Video Codec-->
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Video Codec" />
+                    <DropDownButton x:Name="dropdownVideoCodec" Content="H.264/AVC">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="H.264/AVC" Click="onVideoCodecItemClick" />
+                                <MenuFlyoutItem Text="H.265/HEVC" Click="onVideoCodecItemClick" />
+                                <MenuFlyoutItem Text="VP9" Click="onVideoCodecItemClick" />
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+                <!--Constant Rate Factor-->
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Constant Rate Factor" />
+                    <Slider x:Name="ConstantRateFactorSlider" AutomationProperties.Name="Slider with ticks" TickFrequency="20" TickPlacement="Outside" SnapsTo="StepValues" Maximum="63" Value="21" ValueChanged="ConstantRateFactorSlider_ValueChanged" />
+                    <TextBox x:Name="ConstantRateFactorText" TextChanged="ConstantRateFactorText_TextChanged" Text="21" />
+                </StackPanel>
+                <!--Audio Codec-->
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Audio Codec" />
+                    <DropDownButton x:Name="dropdownAudioCodec" Content="AAC">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="ACC" Click="onAudioCodecItemClick" />
+                                <MenuFlyoutItem Text="AC3" Click="onAudioCodecItemClick" />
+                                <MenuFlyoutItem Text="MP3" Click="onAudioCodecItemClick" />
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+                <!--Variable Bitrate-->
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Variable Bitrate" />
+                    <Slider x:Name="VariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VariableBitrateSlider_ValueChanged" />
+                    <TextBox x:Name="VariableBitrateText" TextChanged="VariableBitrateText_TextChanged" Text="4" />
+                </StackPanel>
+            </StackPanel>
+                <!--The clip button-->
             <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False">Clip</Button>
         </StackPanel>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" MaxWidth="600">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Bottom" MaxWidth="600">
             <TextBlock x:Name="originalVideoLabel" />
-            <MediaPlayerElement x:Name="originalVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600"/>
+            <MediaPlayerElement x:Name="originalVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600" />
             <TextBlock x:Name="originalFileName" FontWeight="SemiBold"/>
             <TextBlock x:Name="originalFilePath" TextWrapping="Wrap" />
         </StackPanel>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="600">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Bottom" MaxWidth="600">
             <TextBlock x:Name="clippedVideoLabel"/>
             <MediaPlayerElement x:Name="clippedVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600"/>
             <TextBlock x:Name="clippedFileName" FontWeight="SemiBold"/>
