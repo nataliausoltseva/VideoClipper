@@ -1,8 +1,13 @@
 using FFMpegCore;
+using FFMpegCore.Enums;
 using Microsoft.UI.Xaml;
+using Microsoft.VisualBasic;
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection.Emit;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -16,11 +21,15 @@ namespace VideoClipper
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
+    /// 
+
     public sealed partial class MainWindow : Window
     {
         private TimeSpan startTimestamp;
         private TimeSpan endTimeStamp;
         private StorageFile file;
+        private MediaSource clippedSource;
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -41,32 +50,50 @@ namespace VideoClipper
 
             // Open the picker for the user to pick a file
             file = await openPicker.PickSingleFileAsync();
-            
+ 
 
             if (file != null)
             {
-                mediaPlayerElement.Source = MediaSource.CreateFromStorageFile(file);
-                mediaPlayerElement.AreTransportControlsEnabled = true;
+                originalVideoLabel.Text = "Original video:";
+                originalVideoMediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
+                    originalVideoMediaPlayer.AreTransportControlsEnabled = true;
+                originalFileName.Text = file.Name;
+                originalFilePath.Text = file.Path;
             }
         }
 
         private void processVideoButton_Click(object sender, RoutedEventArgs e)
         {
+            clippedSource?.Dispose();
+
             string originalFileName = Path.GetFileNameWithoutExtension(file.Path);
             string directory = Path.GetDirectoryName(file.Path);
             string fileExtension = Path.GetExtension(file.Path);
 
             string outputFile = directory + "\\" + originalFileName + "-clipped" + fileExtension;
-            
+
             endTimeStamp = TimeSpan.Parse(endTimestampText.Text);
             startTimestamp = TimeSpan.Parse(startTimestampText.Text);
 
-            processVideoButton.Content = outputFile;
-            FFMpeg.SubVideo(file.Path,
-                outputFile,
-                startTimestamp,
-                endTimeStamp
-            );
+            FFMpegArguments
+            .FromFileInput(file.Path)
+            .OutputToFile(outputFile, false, options => options
+                .WithVideoCodec(VideoCodec.LibX264)
+                .WithConstantRateFactor(21)
+                .WithAudioCodec(AudioCodec.Aac)
+                .WithVariableBitrate(4)
+                .WithFastStart()
+                .Seek(startTimestamp)
+                .EndSeek(endTimeStamp))
+            .ProcessSynchronously();
+
+            var uri = new System.Uri(outputFile);
+            clippedSource = MediaSource.CreateFromUri(uri);
+            clippedVideoLabel.Text = "Clipped video:";
+            clippedVideoMediaPlayer.Source = clippedSource;
+            clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
+            clippedFileName.Text = originalFileName + "-clipped" + fileExtension;
+            clippedFilePath.Text = outputFile;
         }
 
         private void startTimestampText_TextChanged(object sender, RoutedEventArgs e)

@@ -15,8 +15,17 @@
             <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged"/>
             <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False">Clip</Button>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <MediaPlayerElement x:Name="mediaPlayerElement" AutoPlay="False" MaxHeight="600"/>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" MaxWidth="600">
+            <TextBlock x:Name="originalVideoLabel" />
+            <MediaPlayerElement x:Name="originalVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600"/>
+            <TextBlock x:Name="originalFileName" FontWeight="SemiBold"/>
+            <TextBlock x:Name="originalFilePath" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="600">
+            <TextBlock x:Name="clippedVideoLabel"/>
+            <MediaPlayerElement x:Name="clippedVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600"/>
+            <TextBlock x:Name="clippedFileName" FontWeight="SemiBold"/>
+            <TextBlock x:Name="clippedFilePath" TextWrapping="Wrap" />
         </StackPanel>
     </Grid>
 </Window>
