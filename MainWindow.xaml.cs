@@ -77,7 +77,7 @@ namespace VideoClipper
 
             FFMpegArguments
             .FromFileInput(file.Path)
-            .OutputToFile(outputFile, false, options => options
+            .OutputToFile(outputFile, true, options => options
                 .WithVideoCodec(VideoCodec.LibX264)
                 .WithConstantRateFactor(21)
                 .WithAudioCodec(AudioCodec.Aac)
