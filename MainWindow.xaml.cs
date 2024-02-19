@@ -1,6 +1,7 @@
 using FFMpegCore;
 using FFMpegCore.Enums;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.ObjectModel;
@@ -29,6 +30,7 @@ namespace VideoClipper
         private TimeSpan endTimeStamp;
         private StorageFile file;
         private MediaSource clippedSource;
+        private TimeSpan originalFileDuration;
 
         public MainWindow()
         {
@@ -56,9 +58,12 @@ namespace VideoClipper
             {
                 originalVideoLabel.Text = "Original video:";
                 originalVideoMediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
-                    originalVideoMediaPlayer.AreTransportControlsEnabled = true;
+                originalVideoMediaPlayer.AreTransportControlsEnabled = true;
                 originalFileName.Text = file.Name;
                 originalFilePath.Text = file.Path;
+                processVideoButton.IsEnabled = startTimestampText.Text != "" || endTimestampText.Text != "";
+                var mediaInfo = FFProbe.Analyse(file.Path);
+                originalFileDuration = mediaInfo.Duration;
             }
         }
 
@@ -72,38 +77,55 @@ namespace VideoClipper
 
             string outputFile = directory + "\\" + originalFileName + "-clipped" + fileExtension;
 
-            endTimeStamp = TimeSpan.Parse(endTimestampText.Text);
-            startTimestamp = TimeSpan.Parse(startTimestampText.Text);
+            endTimeStamp = endTimestampText.Text != "" ? getTimeSpan(endTimestampText, endTimestampErrorLabel) : originalFileDuration;
+            startTimestamp = startTimestampText.Text != "" ? getTimeSpan(startTimestampText, startTimestampErrorLabel) : TimeSpan.Zero;
 
-            FFMpegArguments
-            .FromFileInput(file.Path)
-            .OutputToFile(outputFile, true, options => options
-                .WithVideoCodec(VideoCodec.LibX264)
-                .WithConstantRateFactor(21)
-                .WithAudioCodec(AudioCodec.Aac)
-                .WithVariableBitrate(4)
-                .WithFastStart()
-                .Seek(startTimestamp)
-                .EndSeek(endTimeStamp))
-            .ProcessSynchronously();
+            bool noErrors = endTimestampErrorLabel.Text == "" && endTimestampErrorLabel.Text == "";
 
-            var uri = new System.Uri(outputFile);
-            clippedSource = MediaSource.CreateFromUri(uri);
-            clippedVideoLabel.Text = "Clipped video:";
-            clippedVideoMediaPlayer.Source = clippedSource;
-            clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
-            clippedFileName.Text = originalFileName + "-clipped" + fileExtension;
-            clippedFilePath.Text = outputFile;
+            if (noErrors)
+            {
+                FFMpegArguments
+                .FromFileInput(file.Path)
+                .OutputToFile(outputFile, true, options => options
+                    .WithVideoCodec(VideoCodec.LibX264)
+                    .WithConstantRateFactor(21)
+                    .WithAudioCodec(AudioCodec.Aac)
+                    .WithVariableBitrate(4)
+                    .WithFastStart()
+                    .Seek(startTimestamp)
+                    .EndSeek(endTimeStamp))
+                .ProcessSynchronously();
+
+                var uri = new System.Uri(outputFile);
+                clippedSource = MediaSource.CreateFromUri(uri);
+                clippedVideoLabel.Text = "Clipped video:";
+                clippedVideoMediaPlayer.Source = clippedSource;
+                clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
+                clippedFileName.Text = originalFileName + "-clipped" + fileExtension;
+                clippedFilePath.Text = outputFile;
+            }
+        }
+
+        private TimeSpan getTimeSpan(TextBox timeSpan, TextBlock errorElement)
+        {
+            try
+            {
+                errorElement.Text = "";
+                return TimeSpan.Parse(timeSpan.Text);
+            } catch {
+                errorElement.Text = "The format is wrong.";
+                return TimeSpan.Zero;
+            }
         }
 
         private void startTimestampText_TextChanged(object sender, RoutedEventArgs e)
         {
-            processVideoButton.IsEnabled = startTimestampText.Text != "" && endTimestampText.Text != "" && file.Name != null;
+            processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "") && file != null;
         }
 
         private void endTimestampText_TextChanged(object sender, RoutedEventArgs e)
         {
-            processVideoButton.IsEnabled = startTimestampText.Text != "" && endTimestampText.Text != "" && file.Name != null;
+            processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "") && file != null;
         }
     }
 }
