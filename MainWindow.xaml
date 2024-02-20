@@ -19,6 +19,16 @@
                 <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged" />
                 <TextBlock x:Name="endTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
             </StackPanel>
+            <TextBox x:Name="timeDurationText" />
+            <DropDownButton x:Name="dropdownButtonLabel" Content="secs">
+                <DropDownButton.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuFlyoutItem Text="secs" Click="onMenuItemClick" />
+                        <MenuFlyoutItem Text="mins" Click="onMenuItemClick" />
+                        <MenuFlyoutItem Text="hrs" Click="onMenuItemClick" />
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
             <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False">Clip</Button>
         </StackPanel>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" MaxWidth="600">
