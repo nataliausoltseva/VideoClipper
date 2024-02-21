@@ -102,10 +102,10 @@ namespace VideoClipper
         private FFMpegArgumentOptions getOptions(FFMpegArgumentOptions options)
         {
             options = options
-                     .WithVideoCodec(VideoCodec.LibX264)
-                     .WithConstantRateFactor(21)
-                     .WithAudioCodec(AudioCodec.Aac)
-                     .WithVariableBitrate(4)
+                     .WithVideoCodec(getVideoCodecType())
+                     .WithConstantRateFactor((int) ConstantRateFactorSlider.Value)
+                     .WithAudioCodec(getAudioCodecType())
+                     .WithVariableBitrate((int) VariableBitrateSlider.Value)
                      .WithFastStart()
                      .Seek(startTimestamp);
 
@@ -136,7 +136,7 @@ namespace VideoClipper
         private TimeSpan getDurationTimeSpan()
         {
             int duration = Int32.Parse(timeDurationText.Text);
-            string type = dropdownButtonLabel.Content.ToString();
+            string type = dropdownDurationLabel.Content.ToString();
 
             switch (type)
             {
@@ -151,6 +151,50 @@ namespace VideoClipper
             return TimeSpan.FromSeconds(duration);
         }
 
+        private Codec getVideoCodecType()
+        {
+            string type = dropdownDurationLabel.Content.ToString();
+
+            Codec videoCodec = VideoCodec.LibX264;
+
+            switch (type)
+            {
+                case "H.264/AVC":
+                    videoCodec = VideoCodec.LibX264;
+                    break;
+                case "H.265/HEVC":
+                    videoCodec = VideoCodec.LibX265;
+                    break;
+                case "VP9":
+                    videoCodec = VideoCodec.LibVpx;
+                    break;
+            }
+
+            return videoCodec;
+        }
+
+        private Codec getAudioCodecType()
+        {
+            string type = dropdownAudioCodec.Content.ToString();
+
+            Codec audioCodec = AudioCodec.Aac;
+
+            switch (type)
+            {
+                case "ACC":
+                    audioCodec = AudioCodec.Aac;
+                    break;
+                case "AC3":
+                    audioCodec = AudioCodec.Ac3;
+                    break;
+                case "MP3":
+                    audioCodec = AudioCodec.LibMp3Lame;
+                    break;
+            }
+
+            return audioCodec;
+        }
+
         private void startTimestampText_TextChanged(object sender, RoutedEventArgs e)
         {
             processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "") && file != null;
@@ -163,7 +207,43 @@ namespace VideoClipper
 
         private void onMenuItemClick(object sender, RoutedEventArgs e)
         {
-            dropdownButtonLabel.Content = (sender as MenuFlyoutItem).Text;
+            dropdownDurationLabel.Content = (sender as MenuFlyoutItem).Text;
+        }
+
+        private void onVideoCodecItemClick(object sender, RoutedEventArgs e)
+        {
+            dropdownVideoCodec.Content = (sender as MenuFlyoutItem).Text;
+        }
+
+        private void onAudioCodecItemClick(object sender, RoutedEventArgs e)
+        {
+            dropdownAudioCodec.Content = (sender as MenuFlyoutItem).Text;
+        }
+
+        private void VariableBitrateText_TextChanged(object sender, RoutedEventArgs e)
+        {
+            VariableBitrateSlider.Value = Double.Parse(VariableBitrateText.Text);
+        }
+
+        private void ConstantRateFactorText_TextChanged(object sender, RoutedEventArgs e)
+        {
+            ConstantRateFactorSlider.Value = Double.Parse(ConstantRateFactorText.Text);
+        }
+
+        private void VariableBitrateSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (VariableBitrateText != null)
+            {
+                VariableBitrateText.Text = VariableBitrateSlider.Value.ToString();
+            }
+        }
+
+        private void ConstantRateFactorSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (ConstantRateFactorText != null)
+            {
+                ConstantRateFactorText.Text = ConstantRateFactorSlider.Value.ToString();
+            }
         }
     }
 }

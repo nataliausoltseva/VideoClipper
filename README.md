@@ -12,9 +12,8 @@
 3. Press the clip button. It might take a while depending on the length/size of the video since it is re-encoding the whole video. Once it is re-encoded, you will be able to preview the clipped video in the app. The app also indicates the location of the file and its filename.
 
 ## Future improvements:
-1. Options for encoding
-	1. VideoCodec
-	2. AudioCodec
-	3. ConstantRateFactor
-	4. VariableBitrate 
-2. Options for copying video and audio - if a user decideds to copy a video it is going to speed up the clipping process.
+1. Options for copying video and audio - if a user decideds to copy a video it is going to speed up the clipping process.
+2. Improve the performance of dragging the sliders and showing the values in the text fields.
+3. Improve the design and layouts.
+4. Add estimated file size in the UI.
+5. Add support for variable bitrate for video (currently it is constant). 
