@@ -81,13 +81,13 @@
                 <!--The clip button-->
             <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False">Clip</Button>
         </StackPanel>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" MaxWidth="600">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Bottom" MaxWidth="600">
             <TextBlock x:Name="originalVideoLabel" />
             <MediaPlayerElement x:Name="originalVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600" />
             <TextBlock x:Name="originalFileName" FontWeight="SemiBold"/>
             <TextBlock x:Name="originalFilePath" TextWrapping="Wrap" />
         </StackPanel>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="600">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Bottom" MaxWidth="600">
             <TextBlock x:Name="clippedVideoLabel"/>
             <MediaPlayerElement x:Name="clippedVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600"/>
             <TextBlock x:Name="clippedFileName" FontWeight="SemiBold"/>
