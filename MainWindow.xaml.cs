@@ -103,9 +103,10 @@ namespace VideoClipper
         {
             options = options
                      .WithVideoCodec(getVideoCodecType())
+                     .WithVariableBitrate((int) VideoVariableBitrateSlider.Value)
                      .WithConstantRateFactor((int) ConstantRateFactorSlider.Value)
                      .WithAudioCodec(getAudioCodecType())
-                     .WithVariableBitrate((int) VariableBitrateSlider.Value)
+                     .WithVariableBitrate((int) AudioVariableBitrateSlider.Value)
                      .WithFastStart()
                      .Seek(startTimestamp);
 
@@ -220,9 +221,14 @@ namespace VideoClipper
             dropdownAudioCodec.Content = (sender as MenuFlyoutItem).Text;
         }
 
-        private void VariableBitrateText_TextChanged(object sender, RoutedEventArgs e)
+        private void AudioVariableBitrateText_TextChanged(object sender, RoutedEventArgs e)
         {
-            VariableBitrateSlider.Value = Double.Parse(VariableBitrateText.Text);
+            AudioVariableBitrateSlider.Value = Double.Parse(AudioVariableBitrateText.Text);
+        }
+
+        private void VideoVariableBitrateText_TextChanged(object sender, RoutedEventArgs e)
+        {
+            VideoVariableBitrateSlider.Value = Double.Parse(VideoVariableBitrateText.Text);
         }
 
         private void ConstantRateFactorText_TextChanged(object sender, RoutedEventArgs e)
@@ -230,11 +236,18 @@ namespace VideoClipper
             ConstantRateFactorSlider.Value = Double.Parse(ConstantRateFactorText.Text);
         }
 
-        private void VariableBitrateSlider_ValueChanged(object sender, RoutedEventArgs e)
+        private void AudioVariableBitrateSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
-            if (VariableBitrateText != null)
+            if (AudioVariableBitrateText != null)
             {
-                VariableBitrateText.Text = VariableBitrateSlider.Value.ToString();
+                AudioVariableBitrateText.Text = AudioVariableBitrateSlider.Value.ToString();
+            }
+        }
+        private void VideoVariableBitrateSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (VideoVariableBitrateText != null)
+            {
+                VideoVariableBitrateText.Text = VideoVariableBitrateSlider.Value.ToString();
             }
         }
 

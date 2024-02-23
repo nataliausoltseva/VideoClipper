@@ -73,9 +73,14 @@
                 </StackPanel>
                 <!--Variable Bitrate-->
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Variable Bitrate" />
-                    <Slider x:Name="VariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VariableBitrateSlider_ValueChanged" />
-                    <TextBox x:Name="VariableBitrateText" TextChanged="VariableBitrateText_TextChanged" Text="4" />
+                    <TextBlock Text="Video Variable Bitrate" />
+                    <Slider x:Name="VideoVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VideoVariableBitrateSlider_ValueChanged" />
+                    <TextBox x:Name="VideoVariableBitrateText" TextChanged="VideoVariableBitrateText_TextChanged" Text="4" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Audio Variable Bitrate" />
+                    <Slider x:Name="AudioVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="AudioVariableBitrateSlider_ValueChanged" />
+                    <TextBox x:Name="AudioVariableBitrateText" TextChanged="AudioVariableBitrateText_TextChanged" Text="4" />
                 </StackPanel>
             </StackPanel>
                 <!--The clip button-->

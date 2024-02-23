@@ -16,4 +16,5 @@
 2. Improve the performance of dragging the sliders and showing the values in the text fields.
 3. Improve the design and layouts.
 4. Add estimated file size in the UI.
-5. Add support for variable bitrate for video (currently it is constant). 
+5. Investigate if there is away to dump a final command to UI.
+6. Fix to keep all audio tracks when clipping. 
