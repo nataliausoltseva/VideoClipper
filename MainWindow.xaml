@@ -8,39 +8,68 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="BaseAlt"/>
+    </Window.SystemBackdrop>
+
     <Grid>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!-- Custom title bar -->
+        <Border Grid.Row="0" x:Name="AppTitleBar" VerticalAlignment="Top">
+            <TextBlock x:Name="AppTitle" Text="BatchAudioConverter" VerticalAlignment="Top" Margin="14,8,0,0" />
+        </Border>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="14" CornerRadius="6" Padding="14">
+            <StackPanel.Background>
+                <SolidColorBrush Color="{ThemeResource ControlSolidFillColorDefault}"/>
+            </StackPanel.Background>
             <!--The add button-->
-            <Button x:Name="addVideoButton" Click="addVideoButton_Click">Add video</Button>
+            <Button x:Name="addVideoButton" Click="addVideoButton_Click" Margin="5" VerticalAlignment="Stretch">
+                <StackPanel>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xecc8;" Margin="0,0,0,3"/>
+                    <TextBlock>Add video</TextBlock>
+                </StackPanel>
+            </Button>
             <!--The container for timestamps-->
-            <StackPanel Orientation="Vertical">
+            <Grid Margin="5,14,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
                 <!--The start timestamp-->
-                <StackPanel Width="200">
+                <StackPanel Grid.Row="0" Width="200">
                     <TextBox PlaceholderText="Start timestamp (HH:MM:SS)" x:Name="startTimestampText" TextChanged="startTimestampText_TextChanged" />
                     <TextBlock x:Name="startTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
                 </StackPanel>
                 <!--The end timestamp-->
-                <StackPanel Width="200">
+                <StackPanel Grid.Row="1" Width="200">
                     <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged" />
                     <TextBlock x:Name="endTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
                 </StackPanel>
-                <!--The duration picker-->
-                <StackPanel Orientation="Horizontal">
-                    <TextBox x:Name="timeDurationText" />
-                    <DropDownButton x:Name="dropdownDurationLabel" Content="secs">
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuFlyoutItem Text="secs" Click="onMenuItemClick" />
-                                <MenuFlyoutItem Text="mins" Click="onMenuItemClick" />
-                                <MenuFlyoutItem Text="hrs" Click="onMenuItemClick" />
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
-                </StackPanel>
+            </Grid>
+            <!--The duration picker-->
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="timeDurationText" Width="50" Height="20"/>
+                <DropDownButton x:Name="dropdownDurationLabel" Content="secs" Margin="5,0,10,0">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem Text="secs" Click="onMenuItemClick" />
+                            <MenuFlyoutItem Text="mins" Click="onMenuItemClick" />
+                            <MenuFlyoutItem Text="hrs" Click="onMenuItemClick" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
             </StackPanel>
-            <StackPanel>
+            <Grid Margin="5,14,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
                 <!--Video Codec-->
-                <StackPanel Orientation="Vertical">
+                <StackPanel Grid.Row="0"  Orientation="Vertical">
                     <TextBlock Text="Video Codec" />
                     <DropDownButton x:Name="dropdownVideoCodec" Content="H.264/AVC">
                         <DropDownButton.Flyout>
@@ -52,14 +81,8 @@
                         </DropDownButton.Flyout>
                     </DropDownButton>
                 </StackPanel>
-                <!--Constant Rate Factor-->
-                <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Constant Rate Factor" />
-                    <Slider x:Name="ConstantRateFactorSlider" AutomationProperties.Name="Slider with ticks" TickFrequency="20" TickPlacement="Outside" SnapsTo="StepValues" Maximum="63" Value="21" ValueChanged="ConstantRateFactorSlider_ValueChanged" />
-                    <TextBox x:Name="ConstantRateFactorText" TextChanged="ConstantRateFactorText_TextChanged" Text="21" />
-                </StackPanel>
                 <!--Audio Codec-->
-                <StackPanel Orientation="Vertical">
+                <StackPanel Grid.Row="1" Orientation="Vertical">
                     <TextBlock Text="Audio Codec" />
                     <DropDownButton x:Name="dropdownAudioCodec" Content="AAC">
                         <DropDownButton.Flyout>
@@ -71,32 +94,60 @@
                         </DropDownButton.Flyout>
                     </DropDownButton>
                 </StackPanel>
-                <!--Variable Bitrate-->
-                <StackPanel Orientation="Vertical">
+            </Grid>
+            <Grid Margin="5,14,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Vertical">
                     <TextBlock Text="Video Variable Bitrate" />
                     <Slider x:Name="VideoVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VideoVariableBitrateSlider_ValueChanged" />
-                    <TextBox x:Name="VideoVariableBitrateText" TextChanged="VideoVariableBitrateText_TextChanged" Text="4" />
                 </StackPanel>
-                <StackPanel Orientation="Vertical">
+                <StackPanel Grid.Row="1"  Orientation="Vertical">
                     <TextBlock Text="Audio Variable Bitrate" />
                     <Slider x:Name="AudioVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="AudioVariableBitrateSlider_ValueChanged" />
-                    <TextBox x:Name="AudioVariableBitrateText" TextChanged="AudioVariableBitrateText_TextChanged" Text="4" />
                 </StackPanel>
+            </Grid>
+            <Grid Margin="5,14,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBox Grid.Row="0" x:Name="VideoVariableBitrateText" TextChanged="VideoVariableBitrateText_TextChanged" Text="4" Height="20"/>
+                <TextBox Grid.Row="1" x:Name="AudioVariableBitrateText" TextChanged="AudioVariableBitrateText_TextChanged" Text="4" Height="20"/>
+            </Grid>
+            <!--The clip button-->
+            <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False" Margin="5" VerticalAlignment="Stretch">
+                <StackPanel>
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xe8c6;" CenterPoint="11,10,0" Rotation="90" Margin="0,0,0,3"/>
+                    <TextBlock>Clip</TextBlock>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Margin="14" CornerRadius="6" Padding="14">
+                <StackPanel.Background>
+                    <SolidColorBrush Color="{ThemeResource ControlSolidFillColorDefault}"/>
+                </StackPanel.Background>
+                <TextBlock x:Name="originalVideoLabel" />
+                <MediaPlayerElement x:Name="originalVideoMediaPlayer" AutoPlay="False" CornerRadius="6"/>
+                <TextBlock x:Name="originalFileName" FontWeight="SemiBold"/>
+                <TextBlock x:Name="originalFilePath" TextWrapping="Wrap" />
             </StackPanel>
-                <!--The clip button-->
-            <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False">Clip</Button>
-        </StackPanel>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Bottom" MaxWidth="600">
-            <TextBlock x:Name="originalVideoLabel" />
-            <MediaPlayerElement x:Name="originalVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600" />
-            <TextBlock x:Name="originalFileName" FontWeight="SemiBold"/>
-            <TextBlock x:Name="originalFilePath" TextWrapping="Wrap" />
-        </StackPanel>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Bottom" MaxWidth="600">
-            <TextBlock x:Name="clippedVideoLabel"/>
-            <MediaPlayerElement x:Name="clippedVideoMediaPlayer" AutoPlay="False" MaxHeight="400" MaxWidth="600"/>
-            <TextBlock x:Name="clippedFileName" FontWeight="SemiBold"/>
-            <TextBlock x:Name="clippedFilePath" TextWrapping="Wrap" />
-        </StackPanel>
+            <StackPanel Grid.Column="1" Margin="14" CornerRadius="6" Padding="14">
+                <StackPanel.Background>
+                    <SolidColorBrush Color="{ThemeResource ControlSolidFillColorDefault}"/>
+                </StackPanel.Background>
+                <TextBlock x:Name="clippedVideoLabel"/>
+                <MediaPlayerElement x:Name="clippedVideoMediaPlayer" AutoPlay="False" CornerRadius="6"/>
+                <TextBlock x:Name="clippedFileName" FontWeight="SemiBold"/>
+                <TextBlock x:Name="clippedFilePath" TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

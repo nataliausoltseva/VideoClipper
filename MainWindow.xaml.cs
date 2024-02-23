@@ -2,28 +2,14 @@ using FFMpegCore;
 using FFMpegCore.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.VisualBasic;
 using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection.Emit;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.UI.ViewManagement;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace VideoClipper
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    /// 
-
     public sealed partial class MainWindow : Window
     {
         private TimeSpan startTimestamp;
@@ -34,7 +20,9 @@ namespace VideoClipper
 
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(AppTitleBar);
         }
 
         private async void addVideoButton_Click(object sender, RoutedEventArgs e)
@@ -104,7 +92,6 @@ namespace VideoClipper
             options = options
                      .WithVideoCodec(getVideoCodecType())
                      .WithVariableBitrate((int) VideoVariableBitrateSlider.Value)
-                     .WithConstantRateFactor((int) ConstantRateFactorSlider.Value)
                      .WithAudioCodec(getAudioCodecType())
                      .WithVariableBitrate((int) AudioVariableBitrateSlider.Value)
                      .WithFastStart()
@@ -231,11 +218,6 @@ namespace VideoClipper
             VideoVariableBitrateSlider.Value = Double.Parse(VideoVariableBitrateText.Text);
         }
 
-        private void ConstantRateFactorText_TextChanged(object sender, RoutedEventArgs e)
-        {
-            ConstantRateFactorSlider.Value = Double.Parse(ConstantRateFactorText.Text);
-        }
-
         private void AudioVariableBitrateSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (AudioVariableBitrateText != null)
@@ -248,14 +230,6 @@ namespace VideoClipper
             if (VideoVariableBitrateText != null)
             {
                 VideoVariableBitrateText.Text = VideoVariableBitrateSlider.Value.ToString();
-            }
-        }
-
-        private void ConstantRateFactorSlider_ValueChanged(object sender, RoutedEventArgs e)
-        {
-            if (ConstantRateFactorText != null)
-            {
-                ConstantRateFactorText.Text = ConstantRateFactorSlider.Value.ToString();
             }
         }
     }
