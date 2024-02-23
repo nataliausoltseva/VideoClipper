@@ -33,8 +33,7 @@
                     <TextBlock>Add video</TextBlock>
                 </StackPanel>
             </Button>
-        
-        <!--The container for timestamps-->
+            <!--The container for timestamps-->
             <Grid Margin="5,14,10,0">
                 <Grid.RowDefinitions>
                     <RowDefinition />
@@ -101,30 +100,23 @@
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <!--Constant Rate Factor-->
                 <StackPanel Grid.Row="0" Orientation="Vertical">
-                    <TextBlock Text="Constant Rate Factor" />
-                    <Slider x:Name="ConstantRateFactorSlider" Maximum="63" Value="21" ValueChanged="ConstantRateFactorSlider_ValueChanged" />
+                    <TextBlock Text="Video Variable Bitrate" />
+                    <Slider x:Name="VideoVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VideoVariableBitrateSlider_ValueChanged" />
                 </StackPanel>
-                <!--Variable Bitrate-->
-                <StackPanel Grid.Row="1" Orientation="Vertical">
-                    <TextBlock Text="Variable Bitrate" />
-                    <Slider x:Name="VariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VariableBitrateSlider_ValueChanged" />
+                <StackPanel Grid.Row="1"  Orientation="Vertical">
+                    <TextBlock Text="Audio Variable Bitrate" />
+                    <Slider x:Name="AudioVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="AudioVariableBitrateSlider_ValueChanged" />
                 </StackPanel>
             </Grid>
-
             <Grid Margin="5,14,10,0">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <!--Constant Rate Factor-->
-                <TextBox Grid.Row="0" Height="20" x:Name="ConstantRateFactorText" TextChanged="ConstantRateFactorText_TextChanged" Text="21" />
-                <!--Variable Bitrate-->
-                <TextBox Grid.Row="1" Height="20" x:Name="VariableBitrateText" TextChanged="VariableBitrateText_TextChanged" Text="4" />
+                <TextBox Grid.Row="0" x:Name="VideoVariableBitrateText" TextChanged="VideoVariableBitrateText_TextChanged" Text="4" Height="20"/>
+                <TextBox Grid.Row="1" x:Name="AudioVariableBitrateText" TextChanged="AudioVariableBitrateText_TextChanged" Text="4" Height="20"/>
             </Grid>
-
-
             <!--The clip button-->
             <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False" Margin="5" VerticalAlignment="Stretch">
                 <StackPanel>
@@ -157,6 +149,5 @@
                 <TextBlock x:Name="clippedFilePath" TextWrapping="Wrap" />
             </StackPanel>
         </Grid>
-        
     </Grid>
 </Window>
