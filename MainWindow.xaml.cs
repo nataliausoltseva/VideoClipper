@@ -2,28 +2,14 @@ using FFMpegCore;
 using FFMpegCore.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.VisualBasic;
 using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection.Emit;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.UI.ViewManagement;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace VideoClipper
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    /// 
-
     public sealed partial class MainWindow : Window
     {
         private TimeSpan startTimestamp;
@@ -34,7 +20,9 @@ namespace VideoClipper
 
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(AppTitleBar);
         }
 
         private async void addVideoButton_Click(object sender, RoutedEventArgs e)
