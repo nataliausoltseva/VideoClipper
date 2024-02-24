@@ -68,8 +68,16 @@
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
+                <CheckBox Grid.Row="0" Content="Encode Video" Checked="EncodeVideo_Checked" Unchecked="EncodeVideo_Unchecked" IsChecked="True" />
+                <CheckBox Grid.Row="1" Content="Encode Audio" Checked="EncodeAudio_Checked" Unchecked="EncodeAudio_Unchecked" IsChecked="True" />
+            </Grid>
+            <Grid Margin="5,14,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
                 <!--Video Codec-->
-                <StackPanel Grid.Row="0"  Orientation="Vertical">
+                <StackPanel Grid.Row="0" Orientation="Vertical">
                     <TextBlock Text="Video Codec" />
                     <DropDownButton x:Name="dropdownVideoCodec" Content="H.264/AVC">
                         <DropDownButton.Flyout>

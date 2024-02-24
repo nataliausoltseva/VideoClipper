@@ -1,9 +1,11 @@
 using FFMpegCore;
+using FFMpegCore.Arguments;
 using FFMpegCore.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.IO;
+using System.Linq;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -17,6 +19,8 @@ namespace VideoClipper
         private StorageFile file;
         private MediaSource clippedSource;
         private TimeSpan originalFileDuration;
+        private bool shouldEncodeVideo;
+        private bool shouldEncodeAudio;
 
         public MainWindow()
         {
@@ -90,12 +94,8 @@ namespace VideoClipper
         private FFMpegArgumentOptions getOptions(FFMpegArgumentOptions options)
         {
             options = options
-                     .WithVideoCodec(getVideoCodecType())
-                     .WithVariableBitrate((int) VideoVariableBitrateSlider.Value)
-                     .WithAudioCodec(getAudioCodecType())
-                     .WithVariableBitrate((int) AudioVariableBitrateSlider.Value)
-                     .WithFastStart()
-                     .Seek(startTimestamp);
+                     .Seek(startTimestamp)
+                     .WithFastStart();
 
             if (timeDurationText.Text != "")
             {
@@ -104,6 +104,27 @@ namespace VideoClipper
             } else
             {
                 options = options.EndSeek(endTimeStamp);
+            }
+
+            if (shouldEncodeVideo)
+            {
+                options = options
+                    .WithVideoCodec(getVideoCodecType())
+                    .WithVariableBitrate((int)VideoVariableBitrateSlider.Value);
+            } else
+            {
+                options = options.CopyChannel(Channel.Video);
+            }
+
+            if (shouldEncodeAudio)
+            {
+                options = options
+                     .WithAudioCodec(getAudioCodecType())
+                     .WithVariableBitrate((int)AudioVariableBitrateSlider.Value);
+            }
+            else
+            {
+                options = options.CopyChannel(Channel.Audio);
             }
 
             return options;
@@ -230,6 +251,53 @@ namespace VideoClipper
             if (VideoVariableBitrateText != null)
             {
                 VideoVariableBitrateText.Text = VideoVariableBitrateSlider.Value.ToString();
+            }
+        }
+
+        private void EncodeVideo_Checked(object sender, RoutedEventArgs e)
+        {
+            shouldEncodeVideo = true;
+
+            if (dropdownVideoCodec != null && VideoVariableBitrateSlider != null && VideoVariableBitrateText != null)
+            {
+                dropdownVideoCodec.IsEnabled = true;
+                VideoVariableBitrateSlider.IsEnabled = true;
+                VideoVariableBitrateText.IsEnabled = true;
+            }
+        }
+
+        private void EncodeVideo_Unchecked(object sender, RoutedEventArgs e)
+        {
+            shouldEncodeVideo = false;
+            
+            if (dropdownVideoCodec != null && VideoVariableBitrateSlider != null && VideoVariableBitrateText != null)
+            {
+                dropdownVideoCodec.IsEnabled = false;
+                VideoVariableBitrateSlider.IsEnabled = false;
+                VideoVariableBitrateText.IsEnabled = false;
+            }
+        }
+
+        private void EncodeAudio_Checked(object sender, RoutedEventArgs e)
+        {
+            shouldEncodeAudio = true;
+            
+            if (dropdownAudioCodec != null && AudioVariableBitrateSlider != null && AudioVariableBitrateText != null)
+            {
+                dropdownAudioCodec.IsEnabled = true;
+                AudioVariableBitrateSlider.IsEnabled = true;
+                AudioVariableBitrateText.IsEnabled = true;
+            }
+        }
+
+        private void EncodeAudio_Unchecked(object sender, RoutedEventArgs e)
+        {
+            shouldEncodeAudio = false;
+            if (dropdownAudioCodec != null && AudioVariableBitrateSlider != null && AudioVariableBitrateText != null)
+            {
+                dropdownAudioCodec.IsEnabled = false;
+                AudioVariableBitrateSlider.IsEnabled = false;
+                AudioVariableBitrateText.IsEnabled = false;
             }
         }
     }
