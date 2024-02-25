@@ -3,6 +3,7 @@ using FFMpegCore.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.IO;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -21,6 +22,8 @@ namespace VideoClipper
         private FFMpegArgumentProcessor args;
         private string outputFilePath;
         private TimeSpan duration;
+        private string estimateFileSize;
+        private double bitrate;
 
         public MainWindow()
         {
@@ -53,9 +56,12 @@ namespace VideoClipper
                 originalVideoMediaPlayer.AreTransportControlsEnabled = true;
                 originalFileName.Text = file.Name;
                 originalFilePath.Text = file.Path;
-                processVideoButton.IsEnabled = startTimestampText.Text != "" || endTimestampText.Text != "";
+                originalFileSize.Text = getFileSize(file.Path);
+
+                processVideoButton.IsEnabled = startTimestampText.Text != "" || endTimestampText.Text != "" || timeDurationText.Text != "";
                 var mediaInfo = FFProbe.Analyse(file.Path);
                 originalFileDuration = mediaInfo.Duration;
+                bitrate = mediaInfo.PrimaryVideoStream.BitRate / 1000000;
 
                 string fileName = System.IO.Path.GetFileNameWithoutExtension(file.Path);
                 string directory = System.IO.Path.GetDirectoryName(file.Path);
@@ -81,8 +87,9 @@ namespace VideoClipper
                 clippedVideoLabel.Text = "Clipped video:";
                 clippedVideoMediaPlayer.Source = clippedSource;
                 clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
-                clippedFileName.Text = originalFileName + "-clipped" + System.IO.Path.GetExtension(file.Path);
+                clippedFileName.Text = originalFileName.Text + "-clipped" + System.IO.Path.GetExtension(file.Path);
                 clippedFilePath.Text = outputFilePath;
+                clippedFileSize.Text = getFileSize(outputFilePath);
             }
         }
 
@@ -92,7 +99,18 @@ namespace VideoClipper
                 .FromFileInput(file.Path)
                 .OutputToFile(outputFilePath, true, options => getOptions(options));
 
+            double totalSeconds = timeDurationText.Text != "" ? duration.TotalSeconds : Math.Abs(startTimestamp.TotalSeconds - endTimeStamp.TotalSeconds);
+
+            double bitrateToUse = bitrate;
+            if (shouldEncodeVideo)
+            {
+                bitrateToUse = (int)VideoVariableBitrateSlider.Value;
+            }
+
             OuputCommand.Text = "ffmpeg " + args.Arguments.ToString();
+
+            double videoFileSize = bitrateToUse * totalSeconds / 8 + (0.128 * totalSeconds);
+            EstimatedFileSize.Text = videoFileSize.ToString() + "MB";
         }
 
         private FFMpegArgumentOptions getOptions(FFMpegArgumentOptions options)
@@ -111,9 +129,11 @@ namespace VideoClipper
 
             if (shouldEncodeVideo)
             {
+                int videoBitrate = (int)VideoVariableBitrateSlider.Value * 1000;
                 options = options
                     .WithVideoCodec(getVideoCodecType())
-                    .WithVariableBitrate((int)VideoVariableBitrateSlider.Value);
+                    .WithCustomArgument("-maxrate " + videoBitrate)
+                    .WithVideoBitrate(videoBitrate);
             } else
             {
                 options = options.CopyChannel(Channel.Video);
@@ -215,7 +235,7 @@ namespace VideoClipper
 
         private void startTimestampText_TextChanged(object sender, RoutedEventArgs e)
         {
-            processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "") && file != null;
+            processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "" || timeDurationText.Text != "") && file != null;
 
             if (file != null)
             {
@@ -226,7 +246,7 @@ namespace VideoClipper
 
         private void endTimestampText_TextChanged(object sender, RoutedEventArgs e)
         {
-            processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "") && file != null;
+            processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "" || timeDurationText.Text != "") && file != null;
 
             if (file != null)
             {
@@ -380,11 +400,25 @@ namespace VideoClipper
 
         private void TimeDurationText_TextChanged(object sender, TextChangedEventArgs e)
         {
+            processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "" || timeDurationText.Text != "") && file != null;
             duration = getDurationTimeSpan();
             if (file != null)
             {
                 UpdateArguments();
             }
+        }
+
+        private string getFileSize(string filePath)
+        {
+            decimal fileSizeInMB = new FileInfo(filePath).Length;
+            string[] suffixes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
+            int counter = 0;
+            while (Math.Round(fileSizeInMB / 1024) >= 1)
+            {
+                fileSizeInMB /= 1024;
+                counter++;
+            }
+            return string.Format("{0:n2}{1}", fileSizeInMB, suffixes[counter]);
         }
     }
 }

@@ -114,8 +114,8 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Orientation="Vertical">
-                        <TextBlock Text="Video Variable Bitrate" />
-                        <Slider x:Name="VideoVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VideoVariableBitrateSlider_ValueChanged" />
+                        <TextBlock Text="Video Variable Bitrate (MB)" />
+                        <Slider x:Name="VideoVariableBitrateSlider" Maximum="50" Value="4" ValueChanged="VideoVariableBitrateSlider_ValueChanged" />
                     </StackPanel>
                     <StackPanel Grid.Row="1"  Orientation="Vertical">
                         <TextBlock Text="Audio Variable Bitrate" />
@@ -130,6 +130,10 @@
                     <TextBox Grid.Row="0" x:Name="VideoVariableBitrateText" TextChanged="VideoVariableBitrateText_TextChanged" Text="4" Height="20"/>
                     <TextBox Grid.Row="1" x:Name="AudioVariableBitrateText" TextChanged="AudioVariableBitrateText_TextChanged" Text="4" Height="20"/>
                 </Grid>
+                <StackPanel Margin="5,14,10,0" VerticalAlignment="Center">
+                    <TextBlock Grid.Row="0" Text="Estimated file size:" Height="20"/>
+                    <TextBlock Grid.Row="1" x:Name="EstimatedFileSize" Text="0MB" Height="20"/>
+                </StackPanel>
                 <!--The clip button-->
                 <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False" Margin="5" VerticalAlignment="Stretch">
                     <StackPanel>
@@ -153,6 +157,7 @@
                 <MediaPlayerElement x:Name="originalVideoMediaPlayer" AutoPlay="False" CornerRadius="6"/>
                 <TextBlock x:Name="originalFileName" FontWeight="SemiBold"/>
                 <TextBlock x:Name="originalFilePath" TextWrapping="Wrap" />
+                <TextBlock x:Name="originalFileSize" />
             </StackPanel>
             <StackPanel Grid.Column="1" Margin="14" CornerRadius="6" Padding="14">
                 <StackPanel.Background>
@@ -162,6 +167,7 @@
                 <MediaPlayerElement x:Name="clippedVideoMediaPlayer" AutoPlay="False" CornerRadius="6"/>
                 <TextBlock x:Name="clippedFileName" FontWeight="SemiBold"/>
                 <TextBlock x:Name="clippedFilePath" TextWrapping="Wrap" />
+                <TextBlock x:Name="clippedFileSize" />
             </StackPanel>
         </Grid>
     </Grid>
