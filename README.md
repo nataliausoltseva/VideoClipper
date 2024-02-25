@@ -12,9 +12,6 @@
 3. Press the clip button. It might take a while depending on the length/size of the video since it is re-encoding the whole video. Once it is re-encoded, you will be able to preview the clipped video in the app. The app also indicates the location of the file and its filename.
 
 ## Future improvements:
-1. Options for copying video and audio - if a user decideds to copy a video it is going to speed up the clipping process.
-2. Improve the performance of dragging the sliders and showing the values in the text fields.
-3. Improve the design and layouts.
-4. Add estimated file size in the UI.
-5. Investigate if there is away to dump a final command to UI.
-6. Fix to keep all audio tracks when clipping. 
+1. Improve the performance of dragging the sliders and showing the values in the text fields.
+2. Add estimated file size in the UI.
+3. Fix to keep all audio tracks when clipping. 
