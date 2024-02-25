@@ -13,5 +13,6 @@
 
 ## Future improvements:
 1. Improve the performance of dragging the sliders and showing the values in the text fields.
-2. Add estimated file size in the UI.
-3. Fix to keep all audio tracks when clipping. 
+2. Fix to keep all audio tracks when clipping. 
+3. Don't allow clips longer than original video.
+4. Catch exception when FPMPEG is not installed. 
