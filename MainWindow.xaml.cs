@@ -1,11 +1,8 @@
 using FFMpegCore;
-using FFMpegCore.Arguments;
 using FFMpegCore.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.IO;
-using System.Linq;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -21,6 +18,9 @@ namespace VideoClipper
         private TimeSpan originalFileDuration;
         private bool shouldEncodeVideo;
         private bool shouldEncodeAudio;
+        private FFMpegArgumentProcessor args;
+        private string outputFilePath;
+        private TimeSpan duration;
 
         public MainWindow()
         {
@@ -56,6 +56,13 @@ namespace VideoClipper
                 processVideoButton.IsEnabled = startTimestampText.Text != "" || endTimestampText.Text != "";
                 var mediaInfo = FFProbe.Analyse(file.Path);
                 originalFileDuration = mediaInfo.Duration;
+
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(file.Path);
+                string directory = System.IO.Path.GetDirectoryName(file.Path);
+                string fileExtension = System.IO.Path.GetExtension(file.Path);
+                outputFilePath = directory + "\\" + fileName + "-clipped" + fileExtension;
+
+                UpdateArguments();
             }
         }
 
@@ -63,32 +70,29 @@ namespace VideoClipper
         {
             clippedSource?.Dispose();
 
-            string originalFileName = Path.GetFileNameWithoutExtension(file.Path);
-            string directory = Path.GetDirectoryName(file.Path);
-            string fileExtension = Path.GetExtension(file.Path);
-
-            string outputFile = directory + "\\" + originalFileName + "-clipped" + fileExtension;
-
-            endTimeStamp = endTimestampText.Text != "" ? getTimeSpan(endTimestampText, endTimestampErrorLabel) : originalFileDuration;
-            startTimestamp = startTimestampText.Text != "" ? getTimeSpan(startTimestampText, startTimestampErrorLabel) : TimeSpan.Zero;
-
             bool noErrors = endTimestampErrorLabel.Text == "" && endTimestampErrorLabel.Text == "";
 
             if (noErrors)
             {
-                FFMpegArguments
-                .FromFileInput(file.Path)
-                .OutputToFile(outputFile, true, options => getOptions(options))
-                .ProcessSynchronously();
+                args.ProcessSynchronously();
 
-                var uri = new System.Uri(outputFile);
+                var uri = new Uri(outputFilePath);
                 clippedSource = MediaSource.CreateFromUri(uri);
                 clippedVideoLabel.Text = "Clipped video:";
                 clippedVideoMediaPlayer.Source = clippedSource;
                 clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
-                clippedFileName.Text = originalFileName + "-clipped" + fileExtension;
-                clippedFilePath.Text = outputFile;
+                clippedFileName.Text = originalFileName + "-clipped" + System.IO.Path.GetExtension(file.Path);
+                clippedFilePath.Text = outputFilePath;
             }
+        }
+
+        private void UpdateArguments()
+        {
+            args = FFMpegArguments
+                .FromFileInput(file.Path)
+                .OutputToFile(outputFilePath, true, options => getOptions(options));
+
+            OuputCommand.Text = "ffmpeg " + args.Arguments.ToString();
         }
 
         private FFMpegArgumentOptions getOptions(FFMpegArgumentOptions options)
@@ -99,7 +103,6 @@ namespace VideoClipper
 
             if (timeDurationText.Text != "")
             {
-                TimeSpan duration = getDurationTimeSpan();
                 options = options.WithDuration(duration);
             } else
             {
@@ -144,20 +147,26 @@ namespace VideoClipper
 
         private TimeSpan getDurationTimeSpan()
         {
-            int duration = Int32.Parse(timeDurationText.Text);
-            string type = dropdownDurationLabel.Content.ToString();
-
-            switch (type)
+            try
             {
-                case "mins":
-                    duration *= 60;
-                    break;
-                case "hrs":
-                    duration *= 60 * 60;
-                    break;
-            }
+                int duration = Int32.Parse(timeDurationText.Text);
+                string type = dropdownDurationLabel.Content.ToString();
 
-            return TimeSpan.FromSeconds(duration);
+                switch (type)
+                {
+                    case "mins":
+                        duration *= 60;
+                        break;
+                    case "hrs":
+                        duration *= 60 * 60;
+                        break;
+                }
+
+                return TimeSpan.FromSeconds(duration);
+            } catch
+            {
+                return TimeSpan.Zero;
+            }
         }
 
         private Codec getVideoCodecType()
@@ -207,36 +216,74 @@ namespace VideoClipper
         private void startTimestampText_TextChanged(object sender, RoutedEventArgs e)
         {
             processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "") && file != null;
+
+            if (file != null)
+            {
+                startTimestamp = startTimestampText.Text != "" ? getTimeSpan(startTimestampText, startTimestampErrorLabel) : TimeSpan.Zero;
+                UpdateArguments();
+            }
         }
 
         private void endTimestampText_TextChanged(object sender, RoutedEventArgs e)
         {
             processVideoButton.IsEnabled = (startTimestampText.Text != "" || endTimestampText.Text != "") && file != null;
+
+            if (file != null)
+            {
+                endTimeStamp = endTimestampText.Text != "" ? getTimeSpan(endTimestampText, endTimestampErrorLabel) : originalFileDuration;
+                UpdateArguments();
+            }
         }
 
         private void onMenuItemClick(object sender, RoutedEventArgs e)
         {
             dropdownDurationLabel.Content = (sender as MenuFlyoutItem).Text;
+
+            if (file != null)
+            {
+                duration = getDurationTimeSpan();
+                UpdateArguments();
+            }
         }
 
         private void onVideoCodecItemClick(object sender, RoutedEventArgs e)
         {
             dropdownVideoCodec.Content = (sender as MenuFlyoutItem).Text;
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
         }
 
         private void onAudioCodecItemClick(object sender, RoutedEventArgs e)
         {
             dropdownAudioCodec.Content = (sender as MenuFlyoutItem).Text;
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
         }
 
         private void AudioVariableBitrateText_TextChanged(object sender, RoutedEventArgs e)
         {
             AudioVariableBitrateSlider.Value = Double.Parse(AudioVariableBitrateText.Text);
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
         }
 
         private void VideoVariableBitrateText_TextChanged(object sender, RoutedEventArgs e)
         {
             VideoVariableBitrateSlider.Value = Double.Parse(VideoVariableBitrateText.Text);
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
         }
 
         private void AudioVariableBitrateSlider_ValueChanged(object sender, RoutedEventArgs e)
@@ -245,12 +292,22 @@ namespace VideoClipper
             {
                 AudioVariableBitrateText.Text = AudioVariableBitrateSlider.Value.ToString();
             }
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
         }
         private void VideoVariableBitrateSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (VideoVariableBitrateText != null)
             {
                 VideoVariableBitrateText.Text = VideoVariableBitrateSlider.Value.ToString();
+            }
+
+            if (file != null)
+            {
+                UpdateArguments();
             }
         }
 
@@ -264,6 +321,11 @@ namespace VideoClipper
                 VideoVariableBitrateSlider.IsEnabled = true;
                 VideoVariableBitrateText.IsEnabled = true;
             }
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
         }
 
         private void EncodeVideo_Unchecked(object sender, RoutedEventArgs e)
@@ -275,6 +337,11 @@ namespace VideoClipper
                 dropdownVideoCodec.IsEnabled = false;
                 VideoVariableBitrateSlider.IsEnabled = false;
                 VideoVariableBitrateText.IsEnabled = false;
+            }
+
+            if (file != null)
+            {
+                UpdateArguments();
             }
         }
 
@@ -288,6 +355,11 @@ namespace VideoClipper
                 AudioVariableBitrateSlider.IsEnabled = true;
                 AudioVariableBitrateText.IsEnabled = true;
             }
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
         }
 
         private void EncodeAudio_Unchecked(object sender, RoutedEventArgs e)
@@ -298,6 +370,20 @@ namespace VideoClipper
                 dropdownAudioCodec.IsEnabled = false;
                 AudioVariableBitrateSlider.IsEnabled = false;
                 AudioVariableBitrateText.IsEnabled = false;
+            }
+
+            if (file != null)
+            {
+                UpdateArguments();
+            }
+        }
+
+        private void TimeDurationText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            duration = getDurationTimeSpan();
+            if (file != null)
+            {
+                UpdateArguments();
             }
         }
     }

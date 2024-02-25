@@ -22,117 +22,124 @@
         <Border Grid.Row="0" x:Name="AppTitleBar" VerticalAlignment="Top">
             <TextBlock x:Name="AppTitle" Text="BatchAudioConverter" VerticalAlignment="Top" Margin="14,8,0,0" />
         </Border>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="14" CornerRadius="6" Padding="14">
-            <StackPanel.Background>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.Background>
                 <SolidColorBrush Color="{ThemeResource ControlSolidFillColorDefault}"/>
-            </StackPanel.Background>
-            <!--The add button-->
-            <Button x:Name="addVideoButton" Click="addVideoButton_Click" Margin="5" VerticalAlignment="Stretch">
-                <StackPanel>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xecc8;" Margin="0,0,0,3"/>
-                    <TextBlock>Add video</TextBlock>
+            </Grid.Background>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="14" CornerRadius="6" Padding="14">
+                <!--The add button-->
+                <Button x:Name="addVideoButton" Click="addVideoButton_Click" Margin="5" VerticalAlignment="Stretch">
+                    <StackPanel>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xecc8;" Margin="0,0,0,3"/>
+                        <TextBlock>Add video</TextBlock>
+                    </StackPanel>
+                </Button>
+                <!--The container for timestamps-->
+                <Grid Margin="5,14,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <!--The start timestamp-->
+                    <StackPanel Grid.Row="0" Width="200">
+                        <TextBox PlaceholderText="Start timestamp (HH:MM:SS)" x:Name="startTimestampText" TextChanged="startTimestampText_TextChanged" />
+                        <TextBlock x:Name="startTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
+                    </StackPanel>
+                    <!--The end timestamp-->
+                    <StackPanel Grid.Row="1" Width="200">
+                        <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged" />
+                        <TextBlock x:Name="endTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+                <!--The duration picker-->
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="timeDurationText" Width="50" Height="20" TextChanged="TimeDurationText_TextChanged"/>
+                    <DropDownButton x:Name="dropdownDurationLabel" Content="secs" Margin="5,0,10,0">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="secs" Click="onMenuItemClick" />
+                                <MenuFlyoutItem Text="mins" Click="onMenuItemClick" />
+                                <MenuFlyoutItem Text="hrs" Click="onMenuItemClick" />
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
                 </StackPanel>
-            </Button>
-            <!--The container for timestamps-->
-            <Grid Margin="5,14,10,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <!--The start timestamp-->
-                <StackPanel Grid.Row="0" Width="200">
-                    <TextBox PlaceholderText="Start timestamp (HH:MM:SS)" x:Name="startTimestampText" TextChanged="startTimestampText_TextChanged" />
-                    <TextBlock x:Name="startTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
-                </StackPanel>
-                <!--The end timestamp-->
-                <StackPanel Grid.Row="1" Width="200">
-                    <TextBox PlaceholderText="End timestamp (HH:MM:SS)" x:Name="endTimestampText" TextChanged="endTimestampText_TextChanged" />
-                    <TextBlock x:Name="endTimestampErrorLabel" Foreground="Red" TextAlignment="Center" />
-                </StackPanel>
-            </Grid>
-            <!--The duration picker-->
-            <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="timeDurationText" Width="50" Height="20"/>
-                <DropDownButton x:Name="dropdownDurationLabel" Content="secs" Margin="5,0,10,0">
-                    <DropDownButton.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="secs" Click="onMenuItemClick" />
-                            <MenuFlyoutItem Text="mins" Click="onMenuItemClick" />
-                            <MenuFlyoutItem Text="hrs" Click="onMenuItemClick" />
-                        </MenuFlyout>
-                    </DropDownButton.Flyout>
-                </DropDownButton>
+                <Grid Margin="5,14,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <CheckBox Grid.Row="0" Content="Encode Video" Checked="EncodeVideo_Checked" Unchecked="EncodeVideo_Unchecked" IsChecked="True" />
+                    <CheckBox Grid.Row="1" Content="Encode Audio" Checked="EncodeAudio_Checked" Unchecked="EncodeAudio_Unchecked" IsChecked="True" />
+                </Grid>
+                <Grid Margin="5,14,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <!--Video Codec-->
+                    <StackPanel Grid.Row="0" Orientation="Vertical">
+                        <TextBlock Text="Video Codec" />
+                        <DropDownButton x:Name="dropdownVideoCodec" Content="H.264/AVC">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="Bottom">
+                                    <MenuFlyoutItem Text="H.264/AVC" Click="onVideoCodecItemClick" />
+                                    <MenuFlyoutItem Text="H.265/HEVC" Click="onVideoCodecItemClick" />
+                                    <MenuFlyoutItem Text="VP9" Click="onVideoCodecItemClick" />
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </StackPanel>
+                    <!--Audio Codec-->
+                    <StackPanel Grid.Row="1" Orientation="Vertical">
+                        <TextBlock Text="Audio Codec" />
+                        <DropDownButton x:Name="dropdownAudioCodec" Content="AAC">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="Bottom">
+                                    <MenuFlyoutItem Text="ACC" Click="onAudioCodecItemClick" />
+                                    <MenuFlyoutItem Text="AC3" Click="onAudioCodecItemClick" />
+                                    <MenuFlyoutItem Text="MP3" Click="onAudioCodecItemClick" />
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </StackPanel>
+                </Grid>
+                <Grid Margin="5,14,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Vertical">
+                        <TextBlock Text="Video Variable Bitrate" />
+                        <Slider x:Name="VideoVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VideoVariableBitrateSlider_ValueChanged" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1"  Orientation="Vertical">
+                        <TextBlock Text="Audio Variable Bitrate" />
+                        <Slider x:Name="AudioVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="AudioVariableBitrateSlider_ValueChanged" />
+                    </StackPanel>
+                </Grid>
+                <Grid Margin="5,14,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0" x:Name="VideoVariableBitrateText" TextChanged="VideoVariableBitrateText_TextChanged" Text="4" Height="20"/>
+                    <TextBox Grid.Row="1" x:Name="AudioVariableBitrateText" TextChanged="AudioVariableBitrateText_TextChanged" Text="4" Height="20"/>
+                </Grid>
+                <!--The clip button-->
+                <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False" Margin="5" VerticalAlignment="Stretch">
+                    <StackPanel>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xe8c6;" CenterPoint="11,10,0" Rotation="90" Margin="0,0,0,3"/>
+                        <TextBlock>Clip</TextBlock>
+                    </StackPanel>
+                </Button>
             </StackPanel>
-            <Grid Margin="5,14,10,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <CheckBox Grid.Row="0" Content="Encode Video" Checked="EncodeVideo_Checked" Unchecked="EncodeVideo_Unchecked" IsChecked="True" />
-                <CheckBox Grid.Row="1" Content="Encode Audio" Checked="EncodeAudio_Checked" Unchecked="EncodeAudio_Unchecked" IsChecked="True" />
-            </Grid>
-            <Grid Margin="5,14,10,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <!--Video Codec-->
-                <StackPanel Grid.Row="0" Orientation="Vertical">
-                    <TextBlock Text="Video Codec" />
-                    <DropDownButton x:Name="dropdownVideoCodec" Content="H.264/AVC">
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuFlyoutItem Text="H.264/AVC" Click="onVideoCodecItemClick" />
-                                <MenuFlyoutItem Text="H.265/HEVC" Click="onVideoCodecItemClick" />
-                                <MenuFlyoutItem Text="VP9" Click="onVideoCodecItemClick" />
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
-                </StackPanel>
-                <!--Audio Codec-->
-                <StackPanel Grid.Row="1" Orientation="Vertical">
-                    <TextBlock Text="Audio Codec" />
-                    <DropDownButton x:Name="dropdownAudioCodec" Content="AAC">
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuFlyoutItem Text="ACC" Click="onAudioCodecItemClick" />
-                                <MenuFlyoutItem Text="AC3" Click="onAudioCodecItemClick" />
-                                <MenuFlyoutItem Text="MP3" Click="onAudioCodecItemClick" />
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
-                </StackPanel>
-            </Grid>
-            <Grid Margin="5,14,10,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0" Orientation="Vertical">
-                    <TextBlock Text="Video Variable Bitrate" />
-                    <Slider x:Name="VideoVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="VideoVariableBitrateSlider_ValueChanged" />
-                </StackPanel>
-                <StackPanel Grid.Row="1"  Orientation="Vertical">
-                    <TextBlock Text="Audio Variable Bitrate" />
-                    <Slider x:Name="AudioVariableBitrateSlider" Maximum="5" Value="4" ValueChanged="AudioVariableBitrateSlider_ValueChanged" />
-                </StackPanel>
-            </Grid>
-            <Grid Margin="5,14,10,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <TextBox Grid.Row="0" x:Name="VideoVariableBitrateText" TextChanged="VideoVariableBitrateText_TextChanged" Text="4" Height="20"/>
-                <TextBox Grid.Row="1" x:Name="AudioVariableBitrateText" TextChanged="AudioVariableBitrateText_TextChanged" Text="4" Height="20"/>
-            </Grid>
-            <!--The clip button-->
-            <Button x:Name="processVideoButton" Click="processVideoButton_Click" IsEnabled="False" Margin="5" VerticalAlignment="Stretch">
-                <StackPanel>
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xe8c6;" CenterPoint="11,10,0" Rotation="90" Margin="0,0,0,3"/>
-                    <TextBlock>Clip</TextBlock>
-                </StackPanel>
-            </Button>
-        </StackPanel>
+            <TextBlock Grid.Row="1" x:Name="OuputCommand" TextWrapping="Wrap" TextAlignment="Center" IsTextSelectionEnabled="True" />
+        </Grid>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
