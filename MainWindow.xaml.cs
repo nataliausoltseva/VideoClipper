@@ -87,6 +87,7 @@ namespace VideoClipper
                 clippedVideoLabel.Text = "Clipped video:";
                 clippedVideoMediaPlayer.Source = clippedSource;
                 clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
+                
                 clippedFileName.Text = originalFileName.Text + "-clipped" + System.IO.Path.GetExtension(file.Path);
                 clippedFilePath.Text = outputFilePath;
                 clippedFileSize.Text = getFileSize(outputFilePath);
@@ -139,6 +140,7 @@ namespace VideoClipper
                 options = options.CopyChannel(Channel.Video);
             }
 
+            options = options.WithCustomArgument("-map 0:v -map 0:a");
             if (shouldEncodeAudio)
             {
                 options = options
