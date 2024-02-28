@@ -1,5 +1,7 @@
 using FFMpegCore;
 using FFMpegCore.Enums;
+using FFMpegCore.Exceptions;
+using Instances;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -24,12 +26,14 @@ namespace VideoClipper
         private TimeSpan duration;
         private string estimateFileSize;
         private double bitrate;
+        private bool showingDialog;
 
         public MainWindow()
         {
             InitializeComponent();
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
+            CheckIfFFMPEGInstalled();
         }
 
         private async void addVideoButton_Click(object sender, RoutedEventArgs e)
@@ -421,6 +425,28 @@ namespace VideoClipper
                 counter++;
             }
             return string.Format("{0:n2}{1}", fileSizeInMB, suffixes[counter]);
+        }
+
+        private async void CheckIfFFMPEGInstalled()
+        {
+            var checkResult = Instance.Finish(GlobalFFOptions.GetFFMpegBinaryPath(), "-version");
+            //if (checkResult.ExitCode != 0)
+            if (true)
+            {
+                TextBlock text = new() { Text = "Test" };
+
+                ContentDialog contentDialog = new()
+                {
+                    Title = "Export files",
+                    Content = new StackPanel
+                    {
+                        Children = { text }
+                    },
+                    CloseButtonText = "Cancel",
+                    XamlRoot = Content.XamlRoot
+                };
+                ContentDialogResult result = await contentDialog.ShowAsync();
+            }
         }
     }
 }
