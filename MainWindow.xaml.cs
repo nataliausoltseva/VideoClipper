@@ -1,6 +1,5 @@
 using FFMpegCore;
 using FFMpegCore.Enums;
-using FFMpegCore.Exceptions;
 using Instances;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -24,16 +23,14 @@ namespace VideoClipper
         private FFMpegArgumentProcessor args;
         private string outputFilePath;
         private TimeSpan duration;
-        private string estimateFileSize;
         private double bitrate;
-        private bool showingDialog;
+        private bool isFfmpegInstalled = true;
 
         public MainWindow()
         {
             InitializeComponent();
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
-            CheckIfFFMPEGInstalled();
         }
 
         private async void addVideoButton_Click(object sender, RoutedEventArgs e)
@@ -63,16 +60,24 @@ namespace VideoClipper
                 originalFileSize.Text = getFileSize(file.Path);
 
                 processVideoButton.IsEnabled = startTimestampText.Text != "" || endTimestampText.Text != "" || timeDurationText.Text != "";
-                var mediaInfo = FFProbe.Analyse(file.Path);
-                originalFileDuration = mediaInfo.Duration;
-                bitrate = mediaInfo.PrimaryVideoStream.BitRate / 1000000;
+                
+                if (isFfmpegInstalled)
+                {
+                    var mediaInfo = FFProbe.Analyse(file.Path);
+                    originalFileDuration = mediaInfo.Duration;
+                    bitrate = mediaInfo.PrimaryVideoStream.BitRate / 1000000;
 
-                string fileName = System.IO.Path.GetFileNameWithoutExtension(file.Path);
-                string directory = System.IO.Path.GetDirectoryName(file.Path);
-                string fileExtension = System.IO.Path.GetExtension(file.Path);
-                outputFilePath = directory + "\\" + fileName + "-clipped" + fileExtension;
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(file.Path);
+                    string directory = System.IO.Path.GetDirectoryName(file.Path);
+                    string fileExtension = System.IO.Path.GetExtension(file.Path);
+                    outputFilePath = directory + "\\" + fileName + "-clipped" + fileExtension;
 
-                UpdateArguments();
+                    UpdateArguments();
+                }
+                else
+                {
+                    generateContenDialog();
+                }
             }
         }
 
@@ -84,38 +89,52 @@ namespace VideoClipper
 
             if (noErrors)
             {
-                args.ProcessSynchronously();
+                if (isFfmpegInstalled)
+                {
+                    args.ProcessSynchronously();
 
-                var uri = new Uri(outputFilePath);
-                clippedSource = MediaSource.CreateFromUri(uri);
-                clippedVideoLabel.Text = "Clipped video:";
-                clippedVideoMediaPlayer.Source = clippedSource;
-                clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
-                
-                clippedFileName.Text = originalFileName.Text + "-clipped" + System.IO.Path.GetExtension(file.Path);
-                clippedFilePath.Text = outputFilePath;
-                clippedFileSize.Text = getFileSize(outputFilePath);
+                    var uri = new Uri(outputFilePath);
+                    clippedSource = MediaSource.CreateFromUri(uri);
+                    clippedVideoLabel.Text = "Clipped video:";
+                    clippedVideoMediaPlayer.Source = clippedSource;
+                    clippedVideoMediaPlayer.AreTransportControlsEnabled = true;
+
+                    clippedFileName.Text = originalFileName.Text + "-clipped" + System.IO.Path.GetExtension(file.Path);
+                    clippedFilePath.Text = outputFilePath;
+                    clippedFileSize.Text = getFileSize(outputFilePath);
+                }
+                else
+                {
+                    generateContenDialog();
+                }
             }
         }
 
         private void UpdateArguments()
         {
-            args = FFMpegArguments
+            if (isFfmpegInstalled)
+            {
+                args = FFMpegArguments
                 .FromFileInput(file.Path)
                 .OutputToFile(outputFilePath, true, options => getOptions(options));
 
-            double totalSeconds = timeDurationText.Text != "" ? duration.TotalSeconds : Math.Abs(startTimestamp.TotalSeconds - endTimeStamp.TotalSeconds);
+                double totalSeconds = timeDurationText.Text != "" ? duration.TotalSeconds : Math.Abs(startTimestamp.TotalSeconds - endTimeStamp.TotalSeconds);
 
-            double bitrateToUse = bitrate;
-            if (shouldEncodeVideo)
-            {
-                bitrateToUse = (int)VideoVariableBitrateSlider.Value;
+                double bitrateToUse = bitrate;
+                if (shouldEncodeVideo)
+                {
+                    bitrateToUse = (int)VideoVariableBitrateSlider.Value;
+                }
+
+                OuputCommand.Text = "ffmpeg " + args.Arguments.ToString();
+
+                double videoFileSize = bitrateToUse * totalSeconds / 8 + (0.128 * totalSeconds);
+                EstimatedFileSize.Text = videoFileSize.ToString() + "MB";
             }
-
-            OuputCommand.Text = "ffmpeg " + args.Arguments.ToString();
-
-            double videoFileSize = bitrateToUse * totalSeconds / 8 + (0.128 * totalSeconds);
-            EstimatedFileSize.Text = videoFileSize.ToString() + "MB";
+            else
+            {
+                generateContenDialog();
+            }
         }
 
         private FFMpegArgumentOptions getOptions(FFMpegArgumentOptions options)
@@ -148,8 +167,8 @@ namespace VideoClipper
             if (shouldEncodeAudio)
             {
                 options = options
-                     .WithAudioCodec(getAudioCodecType())
-                     .WithVariableBitrate((int)AudioVariableBitrateSlider.Value);
+                         .WithAudioCodec(getAudioCodecType())
+                         .WithVariableBitrate((int)AudioVariableBitrateSlider.Value);
             }
             else
             {
@@ -189,7 +208,8 @@ namespace VideoClipper
                 }
 
                 return TimeSpan.FromSeconds(duration);
-            } catch
+            }
+             catch
             {
                 return TimeSpan.Zero;
             }
@@ -427,25 +447,38 @@ namespace VideoClipper
             return string.Format("{0:n2}{1}", fileSizeInMB, suffixes[counter]);
         }
 
-        private async void CheckIfFFMPEGInstalled()
+        private void RootPanel_Loaded(object sender, RoutedEventArgs e)
         {
-            var checkResult = Instance.Finish(GlobalFFOptions.GetFFMpegBinaryPath(), "-version");
-            //if (checkResult.ExitCode != 0)
-            if (true)
+            try
             {
-                TextBlock text = new() { Text = "Test" };
+                Instance.Finish(GlobalFFOptions.GetFFMpegBinaryPath(), "-version");
+            } catch
+            {
+                generateContenDialog();
+            }
+        }
 
-                ContentDialog contentDialog = new()
+        private async void generateContenDialog()
+        {
+            isFfmpegInstalled = false;
+            ContentDialog noWifiDialog = new()
+            {
+                XamlRoot = rootPanel.XamlRoot,
+                Title = "FFMPEG not found",
+                Content = "Try running \"winget install ffmpeg\" in a powershell.",
+                CloseButtonText = "Ok",
+            };
+
+            await noWifiDialog.ShowAsync();
+
+            if (processVideoButton != null)
+            {
+                ToolTip toolTip = new()
                 {
-                    Title = "Export files",
-                    Content = new StackPanel
-                    {
-                        Children = { text }
-                    },
-                    CloseButtonText = "Cancel",
-                    XamlRoot = Content.XamlRoot
+                    Content = "FFMPEG not installed"
+                    
                 };
-                ContentDialogResult result = await contentDialog.ShowAsync();
+                ToolTipService.SetToolTip(processVideoButton, toolTip);
             }
         }
     }
