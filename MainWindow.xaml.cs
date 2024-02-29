@@ -452,7 +452,8 @@ namespace VideoClipper
             try
             {
                 Instance.Finish(GlobalFFOptions.GetFFMpegBinaryPath(), "-version");
-            } catch
+            }
+            catch
             {
                 generateContenDialog();
             }
@@ -461,7 +462,7 @@ namespace VideoClipper
         private async void generateContenDialog()
         {
             isFfmpegInstalled = false;
-            ContentDialog noWifiDialog = new()
+            ContentDialog errorDialog = new()
             {
                 XamlRoot = rootPanel.XamlRoot,
                 Title = "FFMPEG not found",
@@ -469,7 +470,7 @@ namespace VideoClipper
                 CloseButtonText = "Ok",
             };
 
-            await noWifiDialog.ShowAsync();
+            await errorDialog.ShowAsync();
 
             if (processVideoButton != null)
             {
