@@ -72,6 +72,17 @@ namespace VideoClipper
                     string fileExtension = System.IO.Path.GetExtension(file.Path);
                     outputFilePath = directory + "\\" + fileName + "-clipped" + fileExtension;
 
+                    if (endTimestampText.Text != "" && endTimeStamp.TotalSeconds > originalFileDuration.TotalSeconds)
+                    {
+                        endTimeStamp = originalFileDuration;
+                        endTimestampText.Text = originalFileDuration.ToString();
+                    }
+                    if (timeDurationText.Text != "" && duration.TotalSeconds > originalFileDuration.TotalSeconds)
+                    {
+                        duration = originalFileDuration;
+                        setDurationLabel();
+                    }
+
                     UpdateArguments();
                 }
                 else
@@ -215,6 +226,24 @@ namespace VideoClipper
             }
         }
 
+        private void setDurationLabel()
+        {
+            string type = dropdownDurationLabel.Content.ToString();
+
+            switch (type)
+            {
+                case "mins":
+                    timeDurationText.Text = Math.Round(originalFileDuration.TotalMinutes, 2).ToString();
+                    break;
+                case "hrs":
+                    timeDurationText.Text = Math.Round(originalFileDuration.TotalHours, 2).ToString();
+                    break;
+                case "secs":
+                    timeDurationText.Text = Math.Round(originalFileDuration.TotalSeconds, 2).ToString();
+                    break;
+            }
+        }
+
         private Codec getVideoCodecType()
         {
             string type = dropdownDurationLabel.Content.ToString();
@@ -277,6 +306,12 @@ namespace VideoClipper
             if (file != null)
             {
                 endTimeStamp = endTimestampText.Text != "" ? getTimeSpan(endTimestampText, endTimestampErrorLabel) : originalFileDuration;
+
+                if (file != null && endTimeStamp.TotalSeconds > originalFileDuration.TotalSeconds)
+                {
+                    endTimeStamp = originalFileDuration;
+                    endTimestampText.Text = originalFileDuration.ToString();
+                }
                 UpdateArguments();
             }
         }
@@ -288,6 +323,12 @@ namespace VideoClipper
             if (file != null)
             {
                 duration = getDurationTimeSpan();
+
+                if (duration.TotalSeconds > originalFileDuration.TotalSeconds)
+                {
+                    duration = originalFileDuration;
+                    setDurationLabel();
+                }
                 UpdateArguments();
             }
         }
@@ -430,6 +471,12 @@ namespace VideoClipper
             duration = getDurationTimeSpan();
             if (file != null)
             {
+                if (duration.TotalSeconds > originalFileDuration.TotalSeconds)
+                {
+                    duration = originalFileDuration;
+                    setDurationLabel();
+                }
+
                 UpdateArguments();
             }
         }
