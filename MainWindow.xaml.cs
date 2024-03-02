@@ -115,7 +115,6 @@ namespace VideoClipper
                         setDurationLabel();
                     }
                 }
-                
                 else
                 {
                     generateContenDialog();
