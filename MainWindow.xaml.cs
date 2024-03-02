@@ -1,30 +1,67 @@
 using FFMpegCore;
-using FFMpegCore.Enums;
 using Instances;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.IO;
+using System.Linq;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
 namespace VideoClipper
 {
+
+    public class CommandClass
+    {
+        public string key { get; set; }
+        public string value { get; set; }
+        public bool useTheKey { get; set; }
+        public int orderNumber { get; set; }
+        public bool isValueFirst { get; set; }
+
+        public CommandClass(string key, string value, bool useTheKey = false, int orderNumber = 0, bool isValueFirst = false)
+        {
+            this.key = key;
+            this.value = value;
+            this.useTheKey = useTheKey;
+            this.orderNumber = orderNumber;
+            this.isValueFirst = isValueFirst;
+        }
+    }
+
     public sealed partial class MainWindow : Window
     {
-        private TimeSpan startTimestamp;
+        private TimeSpan startTimestamp = TimeSpan.Zero;
         private TimeSpan endTimeStamp;
         private StorageFile file;
         private MediaSource clippedSource;
         private TimeSpan originalFileDuration;
         private bool shouldEncodeVideo;
         private bool shouldEncodeAudio;
-        private FFMpegArgumentProcessor args;
         private string outputFilePath;
         private TimeSpan duration;
         private double bitrate;
         private bool isFfmpegInstalled = true;
+        private CommandClass[] finalCommandCombination = new[]
+        {
+            new CommandClass("-i", null, false, 0, false),
+            new CommandClass("-ss", null, false, 1, false),
+            new CommandClass("-movflags", null, false, 2, false),
+            new CommandClass("faststart", null, false, 3, false),
+            new CommandClass("-t", null, false, 4, false),
+            new CommandClass("-to", null, false, 4, false),
+            new CommandClass("-c:v", null, false, 5, false),
+            new CommandClass("-maxrate", null, false, 6, false),
+            new CommandClass("-b:v", null, false, 7, false),
+            new CommandClass("copy", null, false, 6, false),
+            new CommandClass("-map 0:v", null, false, 8, false),
+            new CommandClass("-map 0:a", null, false, 9, false),
+            new CommandClass("-c:a", null, false, 10, false),
+            new CommandClass("-vbr", null, false, 11, false),
+            new CommandClass("copy", null, false, 11, false),
+            new CommandClass("-y", null, false, 12, true),
+        };
 
         public MainWindow()
         {
@@ -67,11 +104,6 @@ namespace VideoClipper
                     originalFileDuration = mediaInfo.Duration;
                     bitrate = mediaInfo.PrimaryVideoStream.BitRate / 1000000;
 
-                    string fileName = System.IO.Path.GetFileNameWithoutExtension(file.Path);
-                    string directory = System.IO.Path.GetDirectoryName(file.Path);
-                    string fileExtension = System.IO.Path.GetExtension(file.Path);
-                    outputFilePath = directory + "\\" + fileName + "-clipped" + fileExtension;
-
                     if (endTimestampText.Text != "" && endTimeStamp.TotalSeconds > originalFileDuration.TotalSeconds)
                     {
                         endTimeStamp = originalFileDuration;
@@ -82,13 +114,18 @@ namespace VideoClipper
                         duration = originalFileDuration;
                         setDurationLabel();
                     }
-
-                    UpdateArguments();
                 }
                 else
                 {
                     generateContenDialog();
                 }
+
+                string fileName = Path.GetFileNameWithoutExtension(file.Path);
+                string directory = Path.GetDirectoryName(file.Path);
+                string fileExtension = Path.GetExtension(file.Path);
+                outputFilePath = directory + "\\" + fileName + "-clipped" + fileExtension;
+                finalCommandCombination.FirstOrDefault(k => k.key == "-i").value = "\"" + file.Path.ToString() + "\"";
+                UpdateArguments();
             }
         }
 
@@ -102,7 +139,10 @@ namespace VideoClipper
             {
                 if (isFfmpegInstalled)
                 {
-                    args.ProcessSynchronously();
+                    FFMpegArguments
+                        .FromFileInput(file.Path)
+                        .OutputToFile(outputFilePath, true, options => options.WithCustomArgument(getFinalOutputCommand(true)))
+                        .ProcessSynchronously();
 
                     var uri = new Uri(outputFilePath);
                     clippedSource = MediaSource.CreateFromUri(uri);
@@ -123,70 +163,47 @@ namespace VideoClipper
 
         private void UpdateArguments()
         {
-            if (isFfmpegInstalled)
-            {
-                args = FFMpegArguments
-                .FromFileInput(file.Path)
-                .OutputToFile(outputFilePath, true, options => getOptions(options));
 
-                double totalSeconds = timeDurationText.Text != "" ? duration.TotalSeconds : Math.Abs(startTimestamp.TotalSeconds - endTimeStamp.TotalSeconds);
+            finalCommandCombination.FirstOrDefault(k => k.key == "-y").value = "\"" + outputFilePath.ToString() + "\"";
 
-                double bitrateToUse = bitrate;
-                if (shouldEncodeVideo)
-                {
-                    bitrateToUse = (int)VideoVariableBitrateSlider.Value;
-                }
+            double totalSeconds = timeDurationText.Text != "" ? duration.TotalSeconds : Math.Abs(startTimestamp.TotalSeconds - endTimeStamp.TotalSeconds);
 
-                OuputCommand.Text = "ffmpeg " + args.Arguments.ToString();
-
-                double videoFileSize = bitrateToUse * totalSeconds / 8 + (0.128 * totalSeconds);
-                EstimatedFileSize.Text = videoFileSize.ToString() + "MB";
-            }
-            else
-            {
-                generateContenDialog();
-            }
-        }
-
-        private FFMpegArgumentOptions getOptions(FFMpegArgumentOptions options)
-        {
-            options = options
-                     .Seek(startTimestamp)
-                     .WithFastStart();
-
-            if (timeDurationText.Text != "")
-            {
-                options = options.WithDuration(duration);
-            } else
-            {
-                options = options.EndSeek(endTimeStamp);
-            }
-
+            double bitrateToUse = bitrate;
             if (shouldEncodeVideo)
             {
-                int videoBitrate = (int)VideoVariableBitrateSlider.Value * 1000;
-                options = options
-                    .WithVideoCodec(getVideoCodecType())
-                    .WithCustomArgument("-maxrate " + videoBitrate)
-                    .WithVideoBitrate(videoBitrate);
-            } else
-            {
-                options = options.CopyChannel(Channel.Video);
+                bitrateToUse = (int)VideoVariableBitrateSlider.Value;
             }
 
-            options = options.WithCustomArgument("-map 0:v -map 0:a");
-            if (shouldEncodeAudio)
-            {
-                options = options
-                         .WithAudioCodec(getAudioCodecType())
-                         .WithVariableBitrate((int)AudioVariableBitrateSlider.Value);
-            }
-            else
-            {
-                options = options.CopyChannel(Channel.Audio);
-            }
+            double videoFileSize = bitrateToUse * totalSeconds / 8 + (0.128 * totalSeconds);
+            EstimatedFileSize.Text = videoFileSize.ToString() + "MB";
+            setOptions();
 
-            return options;
+            OuputCommand.Text = getFinalOutputCommand();
+        }
+
+        private void setOptions()
+        {
+            finalCommandCombination.FirstOrDefault(k => k.key == "-ss").value = startTimestamp.ToString();
+            finalCommandCombination.FirstOrDefault(k => k.key == "-movflags").useTheKey = true;
+            finalCommandCombination.FirstOrDefault(k => k.key == "faststart").useTheKey = true;
+
+            finalCommandCombination.FirstOrDefault(k => k.key == "-t").value = timeDurationText.Text != "" ? duration.ToString() :  null;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-to").value = timeDurationText.Text == "" ? endTimeStamp.ToString() : null;
+
+            int videoBitrate = (int)VideoVariableBitrateSlider.Value * 1000;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-c:v").value = shouldEncodeVideo ? getVideoCodecType() : null;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-c:v").useTheKey = true;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-maxrate").value = shouldEncodeVideo ? videoBitrate.ToString() : null;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-b:v").value = shouldEncodeVideo ? videoBitrate.ToString() + "k" : null;
+            finalCommandCombination.FirstOrDefault(k => k.key == "copy" && k.orderNumber == 6).useTheKey = !shouldEncodeVideo;
+
+            finalCommandCombination.FirstOrDefault(k => k.key == "-map 0:v").useTheKey = true;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-map 0:a").useTheKey = true;
+
+            finalCommandCombination.FirstOrDefault(k => k.key == "-c:a").value = shouldEncodeAudio ? getAudioCodecType() : null;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-c:a").useTheKey = true;
+            finalCommandCombination.FirstOrDefault(k => k.key == "-vbr").value = shouldEncodeAudio ? AudioVariableBitrateSlider.Value.ToString() : null;
+            finalCommandCombination.FirstOrDefault(k => k.key == "copy" && k.orderNumber == 11).useTheKey = !shouldEncodeAudio;
         }
 
         private TimeSpan getTimeSpan(TextBox timeSpan, TextBlock errorElement)
@@ -244,48 +261,28 @@ namespace VideoClipper
             }
         }
 
-        private Codec getVideoCodecType()
+        private string getVideoCodecType()
         {
-            string type = dropdownDurationLabel.Content.ToString();
-
-            Codec videoCodec = VideoCodec.LibX264;
-
-            switch (type)
+            string type = dropdownVideoCodec.Content.ToString();
+            return type switch
             {
-                case "H.264/AVC":
-                    videoCodec = VideoCodec.LibX264;
-                    break;
-                case "H.265/HEVC":
-                    videoCodec = VideoCodec.LibX265;
-                    break;
-                case "VP9":
-                    videoCodec = VideoCodec.LibVpx;
-                    break;
-            }
-
-            return videoCodec;
+                "H.264/AVC" => "libx264",
+                "H.265/HEVC" => "libx265",
+                "VP9" => "libvpx",
+                _ => "libx264",
+            };
         }
 
-        private Codec getAudioCodecType()
+        private string getAudioCodecType()
         {
             string type = dropdownAudioCodec.Content.ToString();
-
-            Codec audioCodec = AudioCodec.Aac;
-
-            switch (type)
+            return type switch
             {
-                case "ACC":
-                    audioCodec = AudioCodec.Aac;
-                    break;
-                case "AC3":
-                    audioCodec = AudioCodec.Ac3;
-                    break;
-                case "MP3":
-                    audioCodec = AudioCodec.LibMp3Lame;
-                    break;
-            }
-
-            return audioCodec;
+                "ACC" => "aac",
+                "AC3" => "ac3",
+                "MP3" => "libmp3lame",
+                _ => "aac",
+            };
         }
 
         private void startTimestampText_TextChanged(object sender, RoutedEventArgs e)
@@ -312,8 +309,8 @@ namespace VideoClipper
                     endTimeStamp = originalFileDuration;
                     endTimestampText.Text = originalFileDuration.ToString();
                 }
-                UpdateArguments();
             }
+            UpdateArguments();
         }
 
         private void onMenuItemClick(object sender, RoutedEventArgs e)
@@ -528,6 +525,35 @@ namespace VideoClipper
                 };
                 ToolTipService.SetToolTip(processVideoButton, toolTip);
             }
+        }
+
+        private string getFinalOutputCommand(bool skipFileNames = false)
+        {
+            CommandClass[] availableCommands = finalCommandCombination.Where(c => c.value != null || c.useTheKey).OrderBy(c => c.orderNumber).ToArray();
+            string finalCommand = "";
+            foreach (CommandClass commandClass in availableCommands)
+            {
+                if (skipFileNames && (commandClass.key == "-i" || commandClass.key == "-y"))
+                {
+                    continue;
+                }
+
+                if (commandClass.value != null)
+                {
+                    if (commandClass.isValueFirst)
+                    {
+                        finalCommand += (" " + commandClass.value) + (" " + commandClass.key);
+                    } else
+                    {
+                        finalCommand += (" " + commandClass.key) + (" " + commandClass.value);
+                    }
+                    
+                } else if (commandClass.useTheKey)
+                {
+                    finalCommand += (" " + commandClass.key);
+                }
+            }
+            return skipFileNames ? finalCommand : "ffmpeg" + finalCommand;
         }
     }
 }
