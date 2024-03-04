@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
         <!-- Custom title bar -->
         <Border Grid.Row="0" x:Name="AppTitleBar" VerticalAlignment="Top">
-            <TextBlock x:Name="AppTitle" Text="BatchAudioConverter" VerticalAlignment="Top" Margin="14,8,0,0" />
+            <TextBlock x:Name="AppTitle" Text="Video Clipper" VerticalAlignment="Top" Margin="14,8,0,0" />
         </Border>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
